@@ -1,0 +1,29 @@
+type Device {
+    deviceId: ID!
+    deviceName: String!
+    deviceManufacturer: String!
+    deviceType: Int!
+    deviceLocation: String
+    isValid: Boolean!
+}
+
+input DeviceInput {
+    deviceName: String!
+    deviceManufacturer: String!
+    deviceType: Int!
+    deviceLocation: String
+}
+
+type Query {
+    getDevice(deviceId: ID!): Device
+    getAllDevices: [Device]
+}
+
+type Mutation {
+    addDevice(deviceInput: DeviceInput!): Device
+    updateDevice(deviceId: ID!, device: DeviceInput!): Device
+    deleteDevice(deviceId: ID!): String
+    changeDeviceState(deviceId: ID!, stateTypeId: ID!): Device
+    toggleDevice(deviceId: ID!): Device
+
+}
