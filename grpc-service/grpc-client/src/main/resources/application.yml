@@ -1,0 +1,13 @@
+spring:
+  rabbitmq:
+    host: localhost
+    virtual-host: /
+    password: password
+    username: user
+    port: 5672
+
+grpc:
+  client:
+    local-grpc-server:
+      address: "static://localhost:9090"
+      enable-keep-alive: true

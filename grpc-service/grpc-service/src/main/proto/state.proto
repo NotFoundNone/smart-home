@@ -1,0 +1,22 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "dev.project.grpc.grpcservice";
+option java_outer_classname = "LibraryProtos";
+option optimize_for = SPEED;
+import "google/protobuf/empty.proto";
+package smart.home;
+service DeviceControlService {
+  // Метод для включения устройства
+  rpc TurnOnDevice (DeviceRequest) returns (DeviceResponse);
+}
+
+message DeviceRequest {
+  string action = 1;
+  double temperature = 2;
+}
+
+message DeviceResponse {
+  int64 device_id = 1;
+  bool success = 2;
+  string message = 3;
+}

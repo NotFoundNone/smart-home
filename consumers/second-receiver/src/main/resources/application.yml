@@ -1,0 +1,28 @@
+server:
+  port: 8092
+
+spring:
+  application:
+      name: second-receiver
+  rabbitmq:
+    host: localhost
+    virtual-host: /
+    password: password
+    username: user
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+
+rabbitmq:
+  queue:
+    name: heaterQueue
+  exchange:
+    name: deviceEvents
+

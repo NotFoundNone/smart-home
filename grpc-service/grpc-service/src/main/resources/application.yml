@@ -1,0 +1,22 @@
+spring:
+
+  rabbitmq:
+    host: localhost
+    virtual-host: /
+    password: password
+    username: user
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  client:
+    local-grpc-server:
+      address: "static://127.0.0.1:9090"
+      enable-keep-alive: true

@@ -1,0 +1,5 @@
+### Отправка температуры устройства
+POST http://localhost:8080/device/state/temperature?deviceId=1&temperature=26.5
+Content-Type: application/json
+
+### Ожидаемый ответ

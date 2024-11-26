@@ -1,0 +1,46 @@
+server:
+  port: 8090
+
+spring:
+  application:
+      name: sender
+  rabbitmq:
+    host: localhost
+    virtual-host: /
+    password: password
+    username: user
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+
+snowflake:
+  worker-id: 1
+  datacenter-id: 1
+
+graphql:
+  graphiql:
+    enabled: true
+    path: /graphiql
+  servlet:
+    mapping: /graphql
+    enabled: true
+
+rabbitmq:
+  queue:
+    name: deviceControlQueue
+  exchange:
+    name: deviceEvents
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enable: true
