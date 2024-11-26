@@ -87,6 +87,11 @@
 			<artifactId>sender-api</artifactId>
 			<version>0.0.6</version>
 		</dependency>
+		<dependency>
+			<groupId>com.netflix.graphql.dgs</groupId>
+			<artifactId>graphql-dgs</artifactId>
+			<version>7.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

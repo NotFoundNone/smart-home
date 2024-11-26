@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>dev.project</groupId>
 	<artifactId>second-receiver</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>second-receiver</name>
 	<description>Smart home with RabbitMQ</description>
 	<url/>
