@@ -1,9 +1,7 @@
 server:
-  port: 8092
-
+  port: 8093
 spring:
-  application:
-      name: second-receiver
+
   rabbitmq:
     host: localhost
     virtual-host: vhost
@@ -20,9 +18,7 @@ spring:
       ddl-auto: update
       dialect: org.hibernate.dialect.PostgreSQLDialect
 
-rabbitmq:
-  queue:
-    name: heaterQueue
-  exchange:
-    name: deviceEvents
-
+  client:
+    local-grpc-server:
+      address: "static://127.0.0.1:9090"
+      enable-keep-alive: true

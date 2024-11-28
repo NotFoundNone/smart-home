@@ -2,7 +2,7 @@ spring:
 
   rabbitmq:
     host: localhost
-    virtual-host: /
+    virtual-host: vhost
     password: password
     username: user
 
@@ -20,3 +20,9 @@ spring:
     local-grpc-server:
       address: "static://127.0.0.1:9090"
       enable-keep-alive: true
+
+rabbitmq:
+  queue:
+    name: notificationQueue
+  exchange:
+    name: deviceEvents

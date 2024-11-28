@@ -6,7 +6,7 @@ spring:
       name: sender
   rabbitmq:
     host: localhost
-    virtual-host: /
+    virtual-host: vhost
     password: password
     username: user
 

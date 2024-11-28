@@ -19,6 +19,8 @@ public class DeviceService {
 
     private static final Double MIN_TEMPERATURE = 20.0;
 
+    static final String exchangeName = "deviceEvents";
+
     private final DeviceRepository deviceRepository;
     private final DeviceStateRepository deviceStateRepository;
     private final RabbitTemplate rabbitTemplate;
@@ -34,6 +36,8 @@ public class DeviceService {
 
     // Основной метод обработки действий
     public void processTemperatureAction(Double averageTemperature) {
+
+        sendNotification("Heating system activated!");
         // Проверяем открытые окна или двери
         if (hasOpenWindowsOrDoors()) {
             LOGGER.info("Open windows or doors detected!");
@@ -80,6 +84,7 @@ public class DeviceService {
 
     // Отправка уведомлений в RabbitMQ
     private void sendNotification(String message) {
-//        rabbitTemplate.convertAndSend("notifications.queue", message);
+        LOGGER.info("Send message = {}", message);
+        rabbitTemplate.convertAndSend(exchangeName,"notifications.queue", message);
     }
 }
