@@ -12,8 +12,17 @@
             position: fixed;
             top: 10px;
             right: 10px;
-            height: 50px;
             width: 400px;
+        }
+        #temperatureDisplay {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #eef;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+            font-size: 18px;
+            font-weight: bold;
         }
         .notification {
             background-color: #f4f4f4;
@@ -35,16 +44,27 @@
 <body>
 <h1>WebSocket Notifications</h1>
 <div id="notifications"></div>
+
+<h2>Current Temperature:</h2>
+<div id="temperatureDisplay">Loading...</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
 <script>
-    const socket = new SockJS('/ws'); // Подключаемся к вашему WebSocket-серверу
+    const socket = new SockJS('/ws');
     const stompClient = Stomp.over(socket);
 
     stompClient.connect({}, () => {
         console.log('Connected to WebSocket');
+
+        // Слушаем уведомления
         stompClient.subscribe('/topic/notifications', (message) => {
             showNotification(message.body);
+        });
+
+        // Слушаем температуру и отображаем её
+        stompClient.subscribe('/topic/temperature', (temperature) => {
+            updateTemperature(temperature.body);
         });
     });
 
@@ -57,7 +77,12 @@
 
         setTimeout(() => {
             notificationsDiv.removeChild(notification);
-        }, 5000); // Удаляем уведомление через 5 секунд
+        }, 5000);
+    }
+
+    function updateTemperature(temperature) {
+        const temperatureDisplay = document.getElementById('temperatureDisplay');
+        temperatureDisplay.textContent = temperature; // Обновляем текст температуры
     }
 </script>
 </body>

@@ -69,11 +69,9 @@ public class DeviceController implements DeviceApi {
                 .map(device -> {
                     DeviceResourceDtoRequest resource = new DeviceResourceDtoRequest(device);
 
-                    // Adding links
                     resource.add(linkTo(methodOn(DeviceController.class).getDevice(device.getDeviceId())).withSelfRel());
                     resource.add(linkTo(methodOn(DeviceController.class).getAllDevices()).withRel("devices"));
 
-                    // Adding actions
                     resource.addAction("update", "PUT", linkTo(methodOn(DeviceController.class).updateDevice(device)).withRel("update"));
                     resource.addAction("delete", "DELETE", linkTo(methodOn(DeviceController.class).deleteDevice(device.getDeviceId())).withRel("delete"));
 

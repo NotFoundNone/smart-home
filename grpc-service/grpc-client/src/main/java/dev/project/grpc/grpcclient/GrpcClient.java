@@ -5,12 +5,16 @@ import dev.project.grpc.grpcservice.DeviceRequest;
 import dev.project.grpc.grpcservice.DeviceResponse;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
 @Component
 public class GrpcClient implements AutoCloseable{
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(GrpcClient.class);
 
 	private final ManagedChannel channel;
 	private final DeviceControlServiceGrpc.DeviceControlServiceBlockingStub blockingStub;
@@ -29,7 +33,7 @@ public class GrpcClient implements AutoCloseable{
 			channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			System.err.println("Thread interrupted while shutting down channel");
+			LOGGER.info("Thread interrupted while shutting down channel");
 		}
 	}
 
@@ -41,7 +45,7 @@ public class GrpcClient implements AutoCloseable{
 
 		DeviceResponse response = blockingStub.turnOnDevice(request);
 
-		System.out.println("Ответ от сервера: " + response.getMessage());
+		LOGGER.info("Ответ от сервера: " + response.getMessage());
 		return response;
 	}
 }

@@ -33,12 +33,11 @@ public class RabbitMqListener {
 
             if ("temperature".equals(action)) {
                 DeviceResponse response = grpcClient.turnOnDevice(averageTemperature);
-                System.out.println("Выполнено!!!");
             } else {
-                System.out.println("Неизвестное действие: " + action);
+                LOGGER.info("Неизвестное действие: " + action);
             }
         } catch (Exception e) {
-            System.err.println("Ошибка при обработке сообщения: " + e.getMessage());
+            LOGGER.info("Ошибка при обработке сообщения: " + e.getMessage());
             e.printStackTrace();
         }
     }

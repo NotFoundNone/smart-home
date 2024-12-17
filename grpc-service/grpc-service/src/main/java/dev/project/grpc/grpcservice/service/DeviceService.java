@@ -1,6 +1,5 @@
 package dev.project.grpc.grpcservice.service;
 
-import dev.project.grpc.grpcservice.DeviceControlServiceImpl;
 import dev.project.grpc.grpcservice.repository.DeviceRepository;
 import dev.project.grpc.grpcservice.repository.DeviceStateRepository;
 import dev.project.grpc.grpcservice.entity.DeviceState;
@@ -37,29 +36,32 @@ public class DeviceService {
     // Основной метод обработки действий
     public void processTemperatureAction(Double averageTemperature) {
 
-        sendNotification("Heating system activated!");
         // Проверяем открытые окна или двери
         if (hasOpenWindowsOrDoors()) {
             LOGGER.info("Open windows or doors detected!");
             sendNotification("Open windows or doors detected!");
+            try {
+                LOGGER.info("Waiting 5 seconds before activating heating...");
+                Thread.sleep(5000); // Задержка в 5 секунд
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOGGER.error("Heating activation delay interrupted", e);
+                return;
+            }
         }
 
-        // Если температура ниже 20, проверяем систему отопления
+        // Если температура ниже 25, проверяем систему отопления
         if (averageTemperature < MIN_TEMPERATURE) {
             if (!hasActiveHeatingDevices()) {
-                LOGGER.info("Heating system activated!");
+                LOGGER.info("Activated heating system!");
                 activateAnyHeatingDevice();
-                sendNotification("Heating system activated!");
             }
         }
     }
 
     // Проверка открытых окон или дверей
     private boolean hasOpenWindowsOrDoors() {
-        LOGGER.info("Check!!");
         List<DeviceState> openStates = deviceStateRepository.findStatesByTypeAndDeviceTypes(7L, List.of(21L, 22L));
-
-        LOGGER.info("Empty = {}", openStates.isEmpty());
         return !openStates.isEmpty();
     }
 
@@ -76,9 +78,7 @@ public class DeviceService {
             DeviceState state = inactiveStates.get(0);
             state.setStateTypeId(1L); // Установить состояние "активное"
             deviceStateRepository.save(state);
-        }
-        else {
-            DeviceState deviceState = new DeviceState();
+            sendNotification("Heating system activated!");
         }
     }
 

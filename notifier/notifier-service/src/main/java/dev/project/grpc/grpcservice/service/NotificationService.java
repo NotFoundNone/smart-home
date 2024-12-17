@@ -14,4 +14,7 @@ public class NotificationService {
         template.convertAndSend("/topic/notifications", message);
     }
 
+    public void sendTemperature(String temperature) {
+        template.convertAndSend("/topic/temperature", "Current temperature: " + temperature);
+    }
 }

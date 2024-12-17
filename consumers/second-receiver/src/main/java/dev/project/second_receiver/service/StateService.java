@@ -21,7 +21,7 @@ public class StateService {
     private static final String QUEUE_NAME = "deviceControlQueue";
     private static final String EXCHANGE_NAME = "deviceEvents";
     private static final int MAX_READINGS = 5;
-    private static final int AVERAGE_TEMPERATURE = 25;
+    private static final int AVERAGE_TEMPERATURE = 20;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private List<Double> temperatureReadings = new ArrayList<>();
@@ -68,10 +68,16 @@ public class StateService {
                 .average()
                 .orElse(0.0);
 
+        String averageMessage = String.format(Locale.US,
+                "{\"action\": \"averageTemperature\", \"averageTemperature\": %.2f}",
+                averageTemperature, deviceId);
+
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "average.temperature", averageMessage);
+
+
         if (averageTemperature < AVERAGE_TEMPERATURE) {
             String message = String.format(Locale.US,"{\"action\": \"temperature\", \"averageTemperature\": %.2f}", averageTemperature);
 
-            LOGGER.info("Отправка сообщения в очередь: {}", message);
             LOGGER.info("Warning! AverageTemperature: {}", averageTemperature);
             rabbitTemplate.convertAndSend(EXCHANGE_NAME, "heater.room", message);
         }
