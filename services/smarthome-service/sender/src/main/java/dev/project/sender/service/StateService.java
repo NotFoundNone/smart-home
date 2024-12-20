@@ -89,5 +89,4 @@ public class StateService {
         LOGGER.info("Sending message: {}", message);
         rabbitTemplate.convertAndSend(exchangeName, "device.events", message);
     }
-
 }

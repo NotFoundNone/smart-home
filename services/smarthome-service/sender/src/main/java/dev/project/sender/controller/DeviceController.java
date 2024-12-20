@@ -106,6 +106,5 @@ public class DeviceController implements DeviceApi {
         request.add(linkTo(methodOn(DeviceController.class).getAllDevices()).withRel("devices"));
         return ResponseEntity.ok().body(request);
     }
-
 }
 

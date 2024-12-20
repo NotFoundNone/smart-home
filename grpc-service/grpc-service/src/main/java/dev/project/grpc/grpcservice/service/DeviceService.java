@@ -1,5 +1,6 @@
 package dev.project.grpc.grpcservice.service;
 
+import dev.project.grpc.grpcservice.config.SnowflakeGenerator;
 import dev.project.grpc.grpcservice.repository.DeviceRepository;
 import dev.project.grpc.grpcservice.repository.DeviceStateRepository;
 import dev.project.grpc.grpcservice.entity.DeviceState;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -23,14 +25,17 @@ public class DeviceService {
     private final DeviceRepository deviceRepository;
     private final DeviceStateRepository deviceStateRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final SnowflakeGenerator idGenerator;
 
     @Autowired
     public DeviceService(DeviceRepository deviceRepository,
                          DeviceStateRepository deviceStateRepository,
-                         RabbitTemplate rabbitTemplate) {
+                         RabbitTemplate rabbitTemplate,
+                         SnowflakeGenerator idGenerator) {
         this.deviceRepository = deviceRepository;
         this.deviceStateRepository = deviceStateRepository;
         this.rabbitTemplate = rabbitTemplate;
+        this.idGenerator = idGenerator;
     }
 
     // Основной метод обработки действий
@@ -40,21 +45,14 @@ public class DeviceService {
         if (hasOpenWindowsOrDoors()) {
             LOGGER.info("Open windows or doors detected!");
             sendNotification("Open windows or doors detected!");
-            try {
-                LOGGER.info("Waiting 5 seconds before activating heating...");
-                Thread.sleep(5000); // Задержка в 5 секунд
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                LOGGER.error("Heating activation delay interrupted", e);
-                return;
-            }
         }
-
-        // Если температура ниже 25, проверяем систему отопления
-        if (averageTemperature < MIN_TEMPERATURE) {
-            if (!hasActiveHeatingDevices()) {
-                LOGGER.info("Activated heating system!");
-                activateAnyHeatingDevice();
+        else {
+            // Если температура ниже 20, проверяем систему отопления
+            if (averageTemperature < MIN_TEMPERATURE) {
+                if (!hasActiveHeatingDevices()) {
+                    LOGGER.info("Activating heating system!");
+                    activateAnyHeatingDevice();
+                }
             }
         }
     }
@@ -75,9 +73,23 @@ public class DeviceService {
     private void activateAnyHeatingDevice() {
         List<DeviceState> inactiveStates = deviceStateRepository.findInactiveStatesForActivation(2L);
         if (!inactiveStates.isEmpty()) {
-            DeviceState state = inactiveStates.get(0);
-            state.setStateTypeId(1L); // Установить состояние "активное"
-            deviceStateRepository.save(state);
+            DeviceState oldState = inactiveStates.get(0);
+
+            // Инвалидация старого состояния
+            oldState.setValid(false);
+            oldState.setEndDt(LocalDateTime.now());
+            deviceStateRepository.save(oldState);
+
+            // Создание нового состояния
+            DeviceState newState = new DeviceState();
+            newState.setDeviceStateId(idGenerator.nextId());
+            newState.setStateTypeId(1L); // Установить состояние "активное"
+            newState.setDevice(oldState.getDevice());
+            newState.setBegitDt(LocalDateTime.now());
+            newState.setValid(true);
+            deviceStateRepository.save(newState);
+
+            // Отправка уведомления
             sendNotification("Heating system activated!");
         }
     }

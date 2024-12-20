@@ -26,9 +26,4 @@ public class StateDataFetcher {
         return deviceService.getDevice(deviceId);
     }
 
-    @DgsMutation
-    public DeviceDto toggleDevice(@InputArgument Long deviceId) {
-        deviceService.toggleDevice(deviceId);
-        return deviceService.getDevice(deviceId);
-    }
 }

@@ -49,7 +49,6 @@ public class StateController implements StateApi {
 
     @Override
     public ResponseEntity<EntityModel<DeviceDto>> toggleDevice(@RequestParam Long deviceId) {
-        deviceService.toggleDevice(deviceId);
         DeviceDto device = deviceService.getDevice(deviceId);
         EntityModel<DeviceDto> resource = EntityModel.of(device);
         resource.add(linkTo(methodOn(DeviceController.class).getDevice(deviceId)).withSelfRel());
