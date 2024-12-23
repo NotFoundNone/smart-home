@@ -27,3 +27,6 @@ type Mutation {
     toggleDevice(deviceId: ID!): Device
 
 }
+
+
+

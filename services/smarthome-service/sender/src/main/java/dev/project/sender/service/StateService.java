@@ -87,6 +87,6 @@ public class StateService {
     public void sendTemperatureUpdate(Long deviceId, double temperature) {
         String message = String.format(Locale.US, "{\"deviceId\": %d, \"value\": %.2f}", deviceId, temperature);
         LOGGER.info("Sending message: {}", message);
-        rabbitTemplate.convertAndSend(exchangeName, "device.events", message);
+        rabbitTemplate.convertAndSend(exchangeName, "device.temperature", message);
     }
 }

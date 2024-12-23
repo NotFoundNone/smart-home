@@ -57,12 +57,10 @@
     stompClient.connect({}, () => {
         console.log('Connected to WebSocket');
 
-        // Слушаем уведомления
         stompClient.subscribe('/topic/notifications', (message) => {
             showNotification(message.body);
         });
 
-        // Слушаем температуру и отображаем её
         stompClient.subscribe('/topic/temperature', (temperature) => {
             updateTemperature(temperature.body);
         });

@@ -24,7 +24,12 @@ public class MQConfiguration {
     }
 
     @Bean
-    Binding binding(Queue queue, Exchange exchange) {
+    Binding firstBinding(Queue queue, Exchange exchange) {
         return BindingBuilder.bind(queue).to(exchange).with("device.events").noargs();
+    }
+
+    @Bean
+    Binding secondBinding(Queue queue, Exchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with("device.temperature").noargs();
     }
 }

@@ -1,3 +1,4 @@
+
 syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "dev.project.grpc.grpcservice";
@@ -6,7 +7,6 @@ option optimize_for = SPEED;
 import "google/protobuf/empty.proto";
 package smart.home;
 service DeviceControlService {
-  // Метод для включения устройства
   rpc TurnOnDevice (DeviceRequest) returns (DeviceResponse);
 }
 

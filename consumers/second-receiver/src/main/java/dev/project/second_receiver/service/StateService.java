@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class StateService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StateService.class);
 
-    private static final String QUEUE_NAME = "deviceControlQueue";
+    private static final String QUEUE_NAME = "eventsQueue";
     private static final String EXCHANGE_NAME = "deviceEvents";
     private static final int MAX_READINGS = 5;
     private static final int AVERAGE_TEMPERATURE = 20;
@@ -30,26 +31,30 @@ public class StateService {
     private RabbitTemplate rabbitTemplate;
 
     @RabbitListener(queues = QUEUE_NAME)
-    public void receiveDeviceStatus(String message) {
-        try {
-            LOGGER.info("Received message: {}", message);
+    public void receiveDeviceStatus(String message, @Header("amqp_receivedRoutingKey") String routingKey) {
+        if ("device.temperature".equals(routingKey)) {
+            try {
+                LOGGER.info("Received message: {}", message);
 
-            JsonNode jsonNode = objectMapper.readTree(message);
+                JsonNode jsonNode = objectMapper.readTree(message);
 
-            if (!jsonNode.has("deviceId") || !jsonNode.has("value")) {
-                LOGGER.error("Invalid message format: missing fields in {}", message);
+                if (!jsonNode.has("deviceId") || !jsonNode.has("value")) {
+                    LOGGER.error("Invalid message format: missing fields in {}", message);
+                }
+
+                Long deviceId = jsonNode.get("deviceId").asLong();
+                double temperature = jsonNode.get("value").asDouble();
+
+                addTemperatureReading(temperature);
+
+                if (temperatureReadings.size() == MAX_READINGS) {
+                    checkAutomationConditions(deviceId);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Error processing message: {}", message, e);
             }
-
-            Long deviceId = jsonNode.get("deviceId").asLong();
-            double temperature = jsonNode.get("value").asDouble();
-
-            addTemperatureReading(temperature);
-
-            if (temperatureReadings.size() == MAX_READINGS) {
-                checkAutomationConditions(deviceId);
-            }
-        } catch (Exception e) {
-            LOGGER.error("Error processing message: {}", message, e);
+        } else {
+            System.out.println("Ignoring message with key: " + routingKey);
         }
     }
 
@@ -70,10 +75,9 @@ public class StateService {
 
         String averageMessage = String.format(Locale.US,
                 "{\"action\": \"averageTemperature\", \"averageTemperature\": %.2f}",
-                averageTemperature, deviceId);
+                averageTemperature);
 
         rabbitTemplate.convertAndSend(EXCHANGE_NAME, "average.temperature", averageMessage);
-
 
         if (averageTemperature < AVERAGE_TEMPERATURE) {
             String message = String.format(Locale.US,"{\"action\": \"temperature\", \"averageTemperature\": %.2f}", averageTemperature);

@@ -45,7 +45,7 @@ public class GrpcClient implements AutoCloseable{
 
 		DeviceResponse response = blockingStub.turnOnDevice(request);
 
-		LOGGER.info("Ответ от сервера: " + response.getMessage());
+		LOGGER.info("Ответ от сервера: {}", response.getMessage());
 		return response;
 	}
 }

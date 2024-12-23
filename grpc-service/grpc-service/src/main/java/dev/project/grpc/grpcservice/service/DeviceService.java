@@ -20,6 +20,12 @@ public class DeviceService {
 
     private static final Double MIN_TEMPERATURE = 20.0;
 
+    private static final Long OPEN_STATE_TYPE = 7L;
+    private static final Long DOOR_SENSOR = 21L;
+    private static final Long WINDOW_SENSOR = 22L;
+    private static final Long HEATER = 2L;
+
+
     static final String exchangeName = "deviceEvents";
 
     private final DeviceRepository deviceRepository;
@@ -38,16 +44,13 @@ public class DeviceService {
         this.idGenerator = idGenerator;
     }
 
-    // Основной метод обработки действий
     public void processTemperatureAction(Double averageTemperature) {
 
-        // Проверяем открытые окна или двери
         if (hasOpenWindowsOrDoors()) {
             LOGGER.info("Open windows or doors detected!");
             sendNotification("Open windows or doors detected!");
         }
         else {
-            // Если температура ниже 20, проверяем систему отопления
             if (averageTemperature < MIN_TEMPERATURE) {
                 if (!hasActiveHeatingDevices()) {
                     LOGGER.info("Activating heating system!");
@@ -57,44 +60,37 @@ public class DeviceService {
         }
     }
 
-    // Проверка открытых окон или дверей
     private boolean hasOpenWindowsOrDoors() {
-        List<DeviceState> openStates = deviceStateRepository.findStatesByTypeAndDeviceTypes(7L, List.of(21L, 22L));
+        List<DeviceState> openStates = deviceStateRepository.findStatesByTypeAndDeviceTypes(OPEN_STATE_TYPE, List.of(DOOR_SENSOR, WINDOW_SENSOR));
         return !openStates.isEmpty();
     }
 
-    // Проверка наличия активных отопительных устройств
     private boolean hasActiveHeatingDevices() {
-        LOGGER.info("Heating on = {}" , !deviceStateRepository.findActiveStatesByDeviceType(2L).isEmpty());
-        return !deviceStateRepository.findActiveStatesByDeviceType(2L).isEmpty();
+        LOGGER.info("Heating on = {}" , !deviceStateRepository.findActiveStatesByDeviceType(HEATER).isEmpty());
+        return !deviceStateRepository.findActiveStatesByDeviceType(HEATER).isEmpty();
     }
 
-    // Активация любого отопительного устройства
     private void activateAnyHeatingDevice() {
-        List<DeviceState> inactiveStates = deviceStateRepository.findInactiveStatesForActivation(2L);
+        List<DeviceState> inactiveStates = deviceStateRepository.findInactiveStatesForActivation(HEATER);
         if (!inactiveStates.isEmpty()) {
             DeviceState oldState = inactiveStates.get(0);
 
-            // Инвалидация старого состояния
             oldState.setValid(false);
             oldState.setEndDt(LocalDateTime.now());
             deviceStateRepository.save(oldState);
 
-            // Создание нового состояния
             DeviceState newState = new DeviceState();
             newState.setDeviceStateId(idGenerator.nextId());
-            newState.setStateTypeId(1L); // Установить состояние "активное"
+            newState.setStateTypeId(1L);
             newState.setDevice(oldState.getDevice());
             newState.setBegitDt(LocalDateTime.now());
             newState.setValid(true);
             deviceStateRepository.save(newState);
 
-            // Отправка уведомления
             sendNotification("Heating system activated!");
         }
     }
 
-    // Отправка уведомлений в RabbitMQ
     private void sendNotification(String message) {
         LOGGER.info("Send message = {}", message);
         rabbitTemplate.convertAndSend(exchangeName,"notifications.queue", message);

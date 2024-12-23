@@ -4,6 +4,7 @@ import dev.project.api.dto.DeviceDto;
 import dev.project.api.exception.DeviceNotFoundException;
 import dev.project.sender.configuration.SnowflakeGenerator;
 import dev.project.sender.controller.SendController;
+import dev.project.sender.entity.DeviceEvent;
 import dev.project.sender.mapper.DeviceMapper;
 import dev.project.sender.repository.DeviceRepository;
 import dev.project.sender.entity.Device;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static dev.project.sender.util.EventMapper.toEvent;
 
 @Service
 public class DeviceService {
@@ -44,9 +47,11 @@ public class DeviceService {
         Device newDevice = deviceMapper.toEntity(deviceDto);
         newDevice.setDeviceId(id);
         newDevice.setValid(true);
-
         deviceRepository.saveAndFlush(newDevice);
         LOGGER.info("Added new device with deviceId: {}", id);
+
+        DeviceEvent event = toEvent("CREATE_DEVICE", newDevice);
+        rabbitTemplate.convertAndSend(exchangeName, "device.events", event);
     }
 
     public DeviceDto getDevice(Long deviceId) throws DeviceNotFoundException {
@@ -60,6 +65,9 @@ public class DeviceService {
         updatedDevice.setValid(true);
         deviceRepository.saveAndFlush(updatedDevice);
         LOGGER.warn("Device with deviceId = {} - updated!", updatedDevice.getDeviceId());
+
+        DeviceEvent event = toEvent("UPDATE_DEVICE", updatedDevice);
+        rabbitTemplate.convertAndSend(exchangeName, "device.events", event);
     }
 
     public void deleteDevice(Long deviceId) {
@@ -71,6 +79,9 @@ public class DeviceService {
             device.setValid(false);
             deviceRepository.saveAndFlush(device);
             LOGGER.info("Device with deviceId = {} deleted.", deviceId);
+
+            DeviceEvent event = toEvent("DELETE_DEVICE", device);
+            rabbitTemplate.convertAndSend(exchangeName, "device.events", event);
         }
         else
         {

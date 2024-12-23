@@ -34,7 +34,7 @@ graphql:
 
 rabbitmq:
   queue:
-    name: deviceControlQueue
+    name: eventsQueue
   exchange:
     name: deviceEvents
 
